@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TradeVision AI</title>
   
-  <!-- Tailwind CSS (This is what makes it look good!) -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- Lucide Icons -->
@@ -19,15 +19,47 @@
       font-family: 'Inter', sans-serif;
     }
     .fade-in {
-      animation: fadeIn 0.5s ease-in-out;
+      animation: fadeIn 0.4s ease-out forwards;
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
   </style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-200 selection:bg-blue-500/30">
+
+  <!-- AUTHENTICATION MODAL (Hidden by default) -->
+  <div id="auth-modal" onclick="if(event.target === this) toggleModal()" class="fixed inset-0 z-[100] hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl relative fade-in">
+      <button onclick="toggleModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+      
+      <div class="flex justify-center mb-6">
+        <div class="w-12 h-12 rounded bg-gradient-to-br from-blue-500 to-emerald-400 flex items-center justify-center">
+          <i data-lucide="activity" class="w-6 h-6 text-white"></i>
+        </div>
+      </div>
+      
+      <h3 class="text-2xl font-bold text-white text-center mb-2">Join TradeVision AI</h3>
+      <p class="text-slate-400 text-center mb-6 text-sm">Create an account to start analyzing your charts automatically.</p>
+      
+      <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">Full Name</label>
+          <input type="text" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="Enter your name">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">Phone Number</label>
+          <input type="tel" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="+91 98765 43210">
+        </div>
+        <button type="submit" class="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold rounded-xl transition-all mt-6 shadow-lg shadow-blue-900/30">
+          Create Account
+        </button>
+      </form>
+    </div>
+  </div>
 
   <!-- NAVBAR -->
   <nav class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
@@ -44,7 +76,7 @@
         <a href="#pricing" class="hover:text-white transition-colors">Pricing</a>
       </div>
       <div>
-        <button class="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors">
+        <button onclick="toggleModal()" class="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors shadow-md shadow-blue-900/20">
           Login / Sign Up
         </button>
       </div>
@@ -99,36 +131,43 @@
 
       <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 md:p-10 shadow-2xl min-h-[400px]">
         
-        <!-- IDLE STATE -->
+        <!-- IDLE STATE (Upload Forms) -->
         <div id="state-idle" class="space-y-8 block">
+          
+          <!-- Hidden File Inputs (These open the file browser) -->
+          <input type="file" id="file-5m" class="hidden" accept="image/*" onchange="handleFileSelection('5m', this)">
+          <input type="file" id="file-15m" class="hidden" accept="image/*" onchange="handleFileSelection('15m', this)">
+          <input type="file" id="file-1h" class="hidden" accept="image/*" onchange="handleFileSelection('1h', this)">
+          <input type="file" id="file-1d" class="hidden" accept="image/*" onchange="handleFileSelection('1d', this)">
+
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             
-            <!-- 5m Chart -->
-            <div id="upload-5m" onclick="handleFileUpload('5m')" class="relative flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all border-slate-700 hover:border-blue-500 hover:bg-slate-900 text-slate-500">
-              <div class="icon-container"><i data-lucide="image" class="w-8 h-8 mb-2"></i></div>
-              <span class="font-semibold">5m Chart</span>
-              <span class="status-text text-xs mt-1 opacity-70">Click to add</span>
+            <!-- 5m Chart Box -->
+            <div id="upload-5m" onclick="document.getElementById('file-5m').click()" class="relative flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all border-slate-700 hover:border-blue-500 hover:bg-slate-900 text-slate-500 group">
+              <div class="icon-container group-hover:scale-110 transition-transform"><i data-lucide="image" class="w-8 h-8 mb-2"></i></div>
+              <span class="font-semibold text-center">5m Chart</span>
+              <span class="status-text text-xs mt-1 opacity-70 text-center">Click to browse</span>
             </div>
 
-            <!-- 15m Chart -->
-            <div id="upload-15m" onclick="handleFileUpload('15m')" class="relative flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all border-slate-700 hover:border-blue-500 hover:bg-slate-900 text-slate-500">
-              <div class="icon-container"><i data-lucide="image" class="w-8 h-8 mb-2"></i></div>
-              <span class="font-semibold">15m Chart</span>
-              <span class="status-text text-xs mt-1 opacity-70">Click to add</span>
+            <!-- 15m Chart Box -->
+            <div id="upload-15m" onclick="document.getElementById('file-15m').click()" class="relative flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all border-slate-700 hover:border-blue-500 hover:bg-slate-900 text-slate-500 group">
+              <div class="icon-container group-hover:scale-110 transition-transform"><i data-lucide="image" class="w-8 h-8 mb-2"></i></div>
+              <span class="font-semibold text-center">15m Chart</span>
+              <span class="status-text text-xs mt-1 opacity-70 text-center">Click to browse</span>
             </div>
 
-            <!-- 1h Chart -->
-            <div id="upload-1h" onclick="handleFileUpload('1h')" class="relative flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all border-slate-700 hover:border-blue-500 hover:bg-slate-900 text-slate-500">
-              <div class="icon-container"><i data-lucide="image" class="w-8 h-8 mb-2"></i></div>
-              <span class="font-semibold">1h Chart</span>
-              <span class="status-text text-xs mt-1 opacity-70">Click to add</span>
+            <!-- 1h Chart Box -->
+            <div id="upload-1h" onclick="document.getElementById('file-1h').click()" class="relative flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all border-slate-700 hover:border-blue-500 hover:bg-slate-900 text-slate-500 group">
+              <div class="icon-container group-hover:scale-110 transition-transform"><i data-lucide="image" class="w-8 h-8 mb-2"></i></div>
+              <span class="font-semibold text-center">1h Chart</span>
+              <span class="status-text text-xs mt-1 opacity-70 text-center">Click to browse</span>
             </div>
 
-            <!-- 1d Chart -->
-            <div id="upload-1d" onclick="handleFileUpload('1d')" class="relative flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all border-slate-700 hover:border-blue-500 hover:bg-slate-900 text-slate-500">
-              <div class="icon-container"><i data-lucide="image" class="w-8 h-8 mb-2"></i></div>
-              <span class="font-semibold">1d Chart</span>
-              <span class="status-text text-xs mt-1 opacity-70">Click to add</span>
+            <!-- 1d Chart Box -->
+            <div id="upload-1d" onclick="document.getElementById('file-1d').click()" class="relative flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all border-slate-700 hover:border-blue-500 hover:bg-slate-900 text-slate-500 group">
+              <div class="icon-container group-hover:scale-110 transition-transform"><i data-lucide="image" class="w-8 h-8 mb-2"></i></div>
+              <span class="font-semibold text-center">1d Chart</span>
+              <span class="status-text text-xs mt-1 opacity-70 text-center">Click to browse</span>
             </div>
 
           </div>
@@ -322,21 +361,6 @@
     </div>
   </section>
 
-  <!-- CTA SECTION -->
-  <section class="py-24 relative overflow-hidden text-center">
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-600/10 rounded-full blur-[100px] pointer-events-none"></div>
-    <div class="max-w-3xl mx-auto px-4 relative z-10">
-      <h2 class="text-4xl font-bold text-white mb-6">Stop guessing. Start trading with clarity.</h2>
-      <button 
-        onclick="document.getElementById('analyzer-section').scrollIntoView({ behavior: 'smooth' })"
-        class="px-8 py-4 bg-white text-slate-900 hover:bg-slate-200 font-bold rounded-xl shadow-xl transition-all inline-flex items-center space-x-2"
-      >
-        <span>Upload Your Chart Now</span>
-        <i data-lucide="chevron-right" class="w-5 h-5"></i>
-      </button>
-    </div>
-  </section>
-
   <!-- FOOTER & DISCLAIMER -->
   <footer class="bg-slate-950 border-t border-slate-900 py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -365,31 +389,55 @@
     // Initialize Lucide Icons
     lucide.createIcons();
 
-    // State object to track uploaded files
+    // Track uploaded files status
     let uploadedFiles = { '5m': false, '15m': false, '1h': false, '1d': false };
 
-    function handleFileUpload(timeframe) {
-      uploadedFiles[timeframe] = true;
-      
-      // Select the container
-      const container = document.getElementById(`upload-${timeframe}`);
-      
-      // Change styling for "Uploaded" state
-      container.classList.remove('border-slate-700', 'text-slate-500', 'hover:border-blue-500', 'hover:bg-slate-900');
-      container.classList.add('border-emerald-500', 'bg-emerald-500/10', 'text-emerald-400');
-      
-      // Update Icon and Text
-      container.querySelector('.icon-container').innerHTML = '<i data-lucide="check-circle" class="w-8 h-8 mb-2"></i>';
-      container.querySelector('.status-text').innerText = 'Uploaded';
-      
-      // Re-initialize icons since we injected a new one
-      lucide.createIcons();
+    // This function runs when a user ACTUALLY selects a file from their computer
+    function handleFileSelection(timeframe, inputElement) {
+      if (inputElement.files && inputElement.files[0]) {
+        uploadedFiles[timeframe] = true;
+        
+        const container = document.getElementById(`upload-${timeframe}`);
+        
+        // Change styling for "Uploaded" state
+        container.classList.remove('border-slate-700', 'text-slate-500', 'hover:border-blue-500', 'hover:bg-slate-900');
+        container.classList.add('border-emerald-500', 'bg-emerald-500/10', 'text-emerald-400');
+        
+        // Extract a short version of the file name to display
+        let fileName = inputElement.files[0].name;
+        if(fileName.length > 14) fileName = fileName.substring(0,12) + '...';
+        
+        // Update Icon and Text to show the file name
+        container.querySelector('.icon-container').innerHTML = '<i data-lucide="check-circle" class="w-8 h-8 mb-2"></i>';
+        container.querySelector('.status-text').innerText = fileName;
+        
+        // Re-initialize icons
+        lucide.createIcons();
+      }
+    }
+
+    // Opens and closes the Auth Modal
+    function toggleModal() {
+      const modal = document.getElementById('auth-modal');
+      if (modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+        lucide.createIcons();
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    // Handles the form submission (Mock)
+    function handleAuthSubmit(e) {
+      e.preventDefault(); // Prevents page reload
+      alert("Thank you for signing up! Your account has been created.");
+      toggleModal(); // Close the modal
     }
 
     function handleAnalyze() {
       // Check if at least one file is uploaded
       if (!Object.values(uploadedFiles).some(val => val === true)) {
-        alert("Please upload at least one chart to run the demo.");
+        alert("Please upload at least one chart image to analyze.");
         return;
       }
 
@@ -409,7 +457,6 @@
         document.getElementById('state-complete').classList.remove('hidden');
         document.getElementById('state-complete').classList.add('block');
         
-        // Re-initialize any new icons in the results block
         lucide.createIcons();
       }, 3500);
     }
@@ -417,6 +464,12 @@
     function resetAnalyzer() {
       // Reset State
       uploadedFiles = { '5m': false, '15m': false, '1h': false, '1d': false };
+      
+      // Clear all file inputs so the user can upload new files
+      document.getElementById('file-5m').value = '';
+      document.getElementById('file-15m').value = '';
+      document.getElementById('file-1h').value = '';
+      document.getElementById('file-1d').value = '';
       
       // Hide Complete State, Show Idle State
       document.getElementById('state-complete').classList.remove('block');
@@ -429,12 +482,11 @@
       const timeframes = ['5m', '15m', '1h', '1d'];
       timeframes.forEach(tf => {
         const container = document.getElementById(`upload-${tf}`);
-        container.className = `relative flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all border-slate-700 hover:border-blue-500 hover:bg-slate-900 text-slate-500`;
-        container.querySelector('.icon-container').innerHTML = '<i data-lucide="image" class="w-8 h-8 mb-2"></i>';
-        container.querySelector('.status-text').innerText = 'Click to add';
+        container.className = `relative flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all border-slate-700 hover:border-blue-500 hover:bg-slate-900 text-slate-500 group`;
+        container.querySelector('.icon-container').innerHTML = '<i data-lucide="image" class="w-8 h-8 mb-2 group-hover:scale-110 transition-transform"></i>';
+        container.querySelector('.status-text').innerText = 'Click to browse';
       });
 
-      // Re-initialize icons
       lucide.createIcons();
     }
   </script>
